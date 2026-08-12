@@ -135,3 +135,19 @@ test("result stays a plain array for existing callers", async () => {
   expect(etas.map((e) => e.co)).toEqual(["kmb", "kmb"]);
   expect(JSON.parse(JSON.stringify(etas)).length).toBe(2);
 });
+
+test("hasError does not survive copying the array — read it off the result", async () => {
+  installFetch({ kmb: "reject" });
+  const etas = await fetchEtas(route(["kmb"]));
+  expect(etas.hasError).toBe(true);
+  const copies: unknown[] = [
+    [...etas],
+    etas.slice(),
+    etas.filter(() => true),
+    etas.concat(),
+    JSON.parse(JSON.stringify(etas)),
+  ];
+  for (const copy of copies) {
+    expect((copy as { hasError?: boolean }).hasError).toBeUndefined();
+  }
+});
