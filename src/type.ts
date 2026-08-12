@@ -82,6 +82,9 @@ export type EtaDb = {
   >;
 };
 
+// hasError is true when at least one operator's fetch failed, so an empty result is explainable.
+export type EtaResult = Eta[] & { hasError: boolean };
+
 export type Eta = {
   eta: string;
   remark: {

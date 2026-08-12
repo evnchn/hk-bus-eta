@@ -8,7 +8,7 @@ import mtr from "./mtr";
 import sunferry from "./sunferry";
 import fortuneferry from "./fortuneferry";
 import hkkf from "./hkkf";
-import { RouteListEntry, EtaDb, Eta, StopList } from "./type";
+import { RouteListEntry, EtaDb, Eta, EtaResult, StopList } from "./type";
 
 interface fetchEtasProps extends RouteListEntry {
   // For mtr and fortuneferry query. Optional
@@ -42,7 +42,7 @@ export async function fetchEtas({
   language,
   holidays,
   serviceDayMap,
-}: fetchEtasProps): Promise<Eta[]> {
+}: fetchEtasProps): Promise<EtaResult> {
   try {
     const tasks = co.map(async (company_id): Promise<Eta[]> => {
       if (company_id === "kmb" && stops.kmb) {
@@ -124,25 +124,30 @@ export async function fetchEtas({
     const settled = await Promise.allSettled(tasks);
 
     let _etas: Eta[] = [];
+    let hasError = false;
     for (const result of settled) {
       if (result.status === "fulfilled") {
         _etas = _etas.concat(result.value);
       } else {
         console.error(result.reason);
+        hasError = true;
       }
     }
 
     if (_etas.some((e) => e.eta)) {
       _etas = _etas.filter((e) => e.eta);
     }
-    return _etas.sort((a, b) => {
-      if (!a.eta || a.eta === "") return 1;
-      else if (!b.eta || b.eta === "") return -1;
-      return a.eta < b.eta ? -1 : 1;
-    });
+    return Object.assign(
+      _etas.sort((a, b) => {
+        if (!a.eta || a.eta === "") return 1;
+        else if (!b.eta || b.eta === "") return -1;
+        return a.eta < b.eta ? -1 : 1;
+      }),
+      { hasError },
+    );
   } catch (err) {
     console.error(err);
-    return [];
+    return Object.assign([] as Eta[], { hasError: true });
   }
 }
 
