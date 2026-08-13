@@ -132,8 +132,11 @@ export async function fetchEtas({
       }
     }
 
+    // Keep error sentinels (fetchError) even when other operators have valid
+    // ETAs, so the UI can surface "request blocked" instead of silently
+    // dropping the failed operator.
     if (_etas.some((e) => e.eta)) {
-      _etas = _etas.filter((e) => e.eta);
+      _etas = _etas.filter((e) => e.eta || e.fetchError);
     }
     return _etas.sort((a, b) => {
       if (!a.eta || a.eta === "") return 1;
@@ -164,7 +167,7 @@ export async function fetchEtaDbMd5(): Promise<string> {
   })
     .then((r) => r.text())
     .catch(() =>
-      fetch("https://hkbus.github.io/hk-bus-crawling/routeFareList.md5", {
+      fetch("https://data.hkbus.app/routeFareList.md5", {
         cache: "no-store",
       }).then((r) => r.text()),
     );
@@ -176,7 +179,7 @@ export async function fetchRouteUpdatedAt(
   const filename =
     `${route.route}+${route.serviceType}+${route.orig.en}+${route.dest.en}`.toUpperCase();
   return fetch(
-    `https://data.hkbus.app/route-ts/${filename.replace(/[\\\/\:\*\?\"\<\>\|\]\']/g, "")}`,
+    `https://data.hkbus.app/route-ts/${filename.replace(/[\\\\\\/\\:\\*\\?\\\"\\<\\>\\|\\]\\']/g, "")}`,
   )
     .then((r) => {
       if (r.ok) {
