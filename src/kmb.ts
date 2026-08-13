@@ -33,7 +33,11 @@ export default function fetchEtas({
           isHttpError: true,
         });
       }
-      return response.json();
+      return response.json().catch(() => {
+        throw Object.assign(new Error("Invalid JSON response"), {
+          isParseError: true,
+        });
+      });
     })
     .then(({ data }) =>
       data
@@ -74,7 +78,10 @@ export default function fetchEtas({
     )
     .catch((err) => {
       console.error("KMB ETA fetch error:", err);
-      const isBlocked = !err?.isHttpError;
+      // Network-level failure (TypeError from adblocker / DNS / offline)
+      // → show "check your ad blocker" hint.
+      // HTTP errors and parse errors → generic "unable to load" message.
+      const isBlocked = !err?.isHttpError && !err?.isParseError;
       return [
         {
           eta: "",
