@@ -132,9 +132,7 @@ export async function fetchEtas({
       }
     }
 
-    // Keep error sentinels (fetchError) even when other operators have valid
-    // ETAs, so the UI can surface "request blocked" instead of silently
-    // dropping the failed operator.
+    // keep fetchError sentinels, so a blocked operator is not silently dropped
     if (_etas.some((e) => e.eta)) {
       _etas = _etas.filter((e) => e.eta || e.fetchError);
     }

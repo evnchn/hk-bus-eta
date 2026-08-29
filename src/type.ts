@@ -95,6 +95,6 @@ export type Eta = {
   co: Company;
   lat?: number;
   lng?: number;
-  /** True when the ETA fetch failed (e.g. blocked by an ad-blocker). The UI should surface a diagnostic hint instead of treating this as "no buses". */
+  /** The fetch failed, e.g. blocked by an ad-blocker — not "no buses". */
   fetchError?: boolean;
 };

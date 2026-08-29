@@ -78,9 +78,8 @@ export default function fetchEtas({
     )
     .catch((err) => {
       console.error("KMB ETA fetch error:", err);
-      // Network-level failure (TypeError from adblocker / DNS / offline)
-      // → show "check your ad blocker" hint.
-      // HTTP errors and parse errors → generic "unable to load" message.
+      // a network-level failure is what an adblocker looks like; HTTP and parse
+      // errors are not
       const isBlocked = !err?.isHttpError && !err?.isParseError;
       return [
         {
